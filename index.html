@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script>
+      // Safeguard to prevent "TypeError: Cannot set property fetch of #<Window> which has only a getter"
+      // in sandbox environments/iframes where window.fetch has only a getter.
+      (function() {
+        try {
+          var originalFetch = window.fetch || globalThis.fetch || self.fetch;
+          if (originalFetch) {
+            var currentFetch = originalFetch;
+            var getter = function() { return currentFetch; };
+            var setter = function(val) { currentFetch = val; };
+
+            var targets = [
+              window,
+              globalThis,
+              self,
+              typeof Window !== 'undefined' ? Window.prototype : null,
+              window.__proto__,
+              globalThis.__proto__,
+              self.__proto__,
+              typeof EventTarget !== 'undefined' ? EventTarget.prototype : null
+            ];
+
+            targets.forEach(function(target) {
+              if (!target) return;
+              try {
+                Object.defineProperty(target, 'fetch', {
+                  get: getter,
+                  set: setter,
+                  configurable: true,
+                  enumerable: true
+                });
+              } catch (e) {}
+            });
+          }
+        } catch (e) {}
+      })();
+    </script>
+    <title>My Google AI Studio App</title>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
+
